@@ -6,6 +6,7 @@ public class GridPosition : MonoBehaviour
     [SerializeField] private int y;
     private void OnMouseDown()
     {
-        Debug.Log($"({x}, {y})");
+        //Debug.Log($"({x}, {y})");
+        GameManager.Instance.ClickedOnGridPosition(x, y);
     }
 }
