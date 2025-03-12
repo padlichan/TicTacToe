@@ -22,6 +22,7 @@ public class GameManager : NetworkBehaviour
     }
 
     private PlayerType localPlayerType;
+    private PlayerType currentPlayerType;
 
     private void Awake()
     {
@@ -33,10 +34,25 @@ public class GameManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.LocalClientId == 0) localPlayerType = PlayerType.Crosses;
         else localPlayerType = PlayerType.Circles;
+        if (IsServer) currentPlayerType = PlayerType.Crosses;
         Debug.Log(localPlayerType);
     }
-    public void ClickedOnGridPosition(int x, int y)
+
+    [Rpc(SendTo.Server)]
+    public void ClickedOnGridPositionRpc(int x, int y, PlayerType localPlayerType)
     {
+        if (localPlayerType != currentPlayerType) return;
         OnClickedOnGridPosition?.Invoke(this, new OnClickedOnGridPositionEventArgs { x = x, y = y, playerType = localPlayerType });
+        switch (localPlayerType)
+        {
+            case PlayerType.Crosses:
+            currentPlayerType = PlayerType.Circles;
+            break;
+            case PlayerType.Circles:
+            currentPlayerType = PlayerType.Crosses;
+            break;
+        }
     }
+
+    public PlayerType GetLocalPlayerType() => localPlayerType;
 }
