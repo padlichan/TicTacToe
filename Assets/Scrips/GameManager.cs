@@ -24,11 +24,13 @@ public class GameManager : NetworkBehaviour
 
     private PlayerType localPlayerType;
     private NetworkVariable<PlayerType> currentPlayerType = new();
+    private PlayerType[,] playedPositionsArray;
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Debug.LogError("Multiple instances of GameManager in scene");
+        playedPositionsArray = new PlayerType[3, 3];
     }
 
     public override void OnNetworkSpawn()
@@ -62,11 +64,13 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void ClickedOnGridPositionRpc(int x, int y, PlayerType localPlayerType)
+    public void ClickedOnGridPositionRpc(int x, int y, PlayerType playerType)
     {
-        if (localPlayerType != currentPlayerType.Value) return;
-        OnClickedOnGridPosition?.Invoke(this, new OnClickedOnGridPositionEventArgs { x = x, y = y, playerType = localPlayerType });
-        switch (localPlayerType)
+        if (playerType != currentPlayerType.Value) return;
+        if (playedPositionsArray[x, y] != PlayerType.None) return;
+        playedPositionsArray[x, y] = playerType;
+        OnClickedOnGridPosition?.Invoke(this, new OnClickedOnGridPositionEventArgs { x = x, y = y, playerType = playerType });
+        switch (playerType)
         {
             case PlayerType.Crosses:
             currentPlayerType.Value = PlayerType.Circles;
